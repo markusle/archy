@@ -40,4 +40,4 @@ install:
 .PHONY: clean
 
 clean:
-	rm -f src/*.o src/*.hi src/archy
+	rm -f src/*.o src/*.hi src/archy src/json
