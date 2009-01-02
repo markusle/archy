@@ -163,19 +163,19 @@ parse_unicode = char 'u' *> ( decode <$> count 4 hexDigit)
 
 -- | parse retrieved info into a PackageInfo structure
 parse_package_info :: JValue -> IO () 
-parse_package_info (JObject val) = 
+parse_package_info (JObject val) = print $ extract_results val
 
-  let
-    (_:foo) = fromJObj val
-    (JObject bar) = snd $ head foo
-    final = lookup "Version" $ fromJObj bar
-  in
-    case final of
-      Nothing -> print "Nothing found"
-      Just (JString a)  -> print a
+  where
+    extract_results :: JObj JValue -> [(String,a)]
+    extract_results obj = 
 
+      let 
+        (_:content) = fromJObj obj
+        (JObject results) = snd $ head content
+      in
+        fromJObj results
 
-
+parse_package_info _             = print "error"
 
 
 -- | main driver for testing only
