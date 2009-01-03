@@ -1,51 +1,41 @@
----------------------------------------------------------------------
--- 
--- implementation of a simple JSON parser with lots of
--- help from RWH. Thanks Don and friends ;)
---
--- (C) 2008 Markus Dittrich, licensed under the GPL v3
-----------------------------------------------------------------------
+{-----------------------------------------------------------------
+ 
+  (c) 2008 Markus Dittrich 
+ 
+  This program is free software; you can redistribute it 
+  and/or modify it under the terms of the GNU General Public 
+  License Version 3 as published by the Free Software Foundation. 
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License Version 3 for more details.
+ 
+  You should have received a copy of the GNU General Public 
+  License along with this program; if not, write to the Free 
+  Software Foundation, Inc., 59 Temple Place - Suite 330, 
+  Boston, MA 02111-1307, USA.
+
+--------------------------------------------------------------------}
 
 -- | implementation of a simple JSON parser with lots of
 -- help from RWH. Thanks Don and friends ;)
+module Json ( module ApplicativeParsec
+            , parse_json 
+            , JValue(..)
+            , unpack_json
+            , fromJAry
+            , fromJObj
+            ) where
 
-module Main where
 
 -- imports
-import Network.Curl 
 import Numeric
 import ApplicativeParsec
-import Debug.Trace
 
 
--- url for testing 
-testUrl = "http://aur.archlinux.org/rpc.php?type=info&arg=slim-cursor"::String
 
-
--- | simple function to request json info from aur
-request_json :: String -> IO (Maybe String)
-request_json url = withCurlDo $ do 
-                     h <- initialize
-                     (status,response) <- curlGetString url [] 
-                     case status of
-                       CurlOK -> return $ Just response
-                       _      -> return Nothing
-
-
--- | simple data structure for keeping track of JSON data
--- for use with pacman and friends
-data PackageInfo 
-  = PackageInfo 
-    { id          :: String
-    , name        :: String
-    , version     :: String
-    , description :: String
-    , url         :: String
-    , license     :: String
-    }
-
-
--- | stuff for JSON parsing
+-- | types for JSON parsing
 data JValue = JString String
             | JNumber Double
             | JBool Bool
@@ -161,29 +151,17 @@ parse_unicode = char 'u' *> ( decode <$> count 4 hexDigit)
         ((code,_):_) = readHex x
 
 
--- | parse retrieved info into a PackageInfo structure
-parse_package_info :: JValue -> IO () 
-parse_package_info (JObject val) = print $ extract_results val
 
-  where
-    extract_results :: JObj JValue -> [(String,a)]
-    extract_results obj = 
+-- | unpack parsed JSON data so we can parse it into a PackageInfo
+-- NOTE: We need more error detection here
+unpack_json :: JObj JValue -> [(String,JValue)]
+unpack_json obj = 
 
-      let 
-        (_:content) = fromJObj obj
-        (JObject results) = snd $ head content
-      in
-        fromJObj results
-
-parse_package_info _             = print "error"
+  let 
+    (_:content) = fromJObj obj
+    (JObject results) = snd $ head content
+  in
+    fromJObj results
 
 
--- | main driver for testing only
-main :: IO ()
-main = request_json testUrl >>= \resp ->
-       case resp of
-         Nothing -> putStrLn "Connection Failed"
-         Just content  -> 
-           case parse parse_json "" content of
-            Left e  -> putStrLn "Parse error" >> print e
-            Right r -> parse_package_info r
+

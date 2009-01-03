@@ -18,23 +18,17 @@
 
 --------------------------------------------------------------------}
 
--- | main archy driver
-module Main where
+
+-- | shared data structures and helper functions
+module ArchyCommon ( AurPackage(..) ) where
 
 
--- local imports
-import AURConnector
-import PacmanWrapper
-
-
--- main
-main :: IO ()
-main = 
-  do
-   havePackages <- get_installed_aur_packages 
-   case havePackages of
-    Nothing -> return ()
-    Just packages -> do
-      info <- retrieve_aur_info packages
-      print info
-      
+-- | data structure holding the package info for an aur package
+data AurPackage = AurPackage { name :: String
+                             , installedVersion :: String 
+                             , availableVersion :: String 
+                             , description      :: String
+                             , url              :: String
+                             , license          :: String
+                             }
+  deriving(Show)
