@@ -1,6 +1,6 @@
 {-----------------------------------------------------------------
  
-  (c) 2008 Markus Dittrich 
+  (c) 2008-2009 Markus Dittrich 
  
   This program is free software; you can redistribute it 
   and/or modify it under the terms of the GNU General Public 
@@ -23,11 +23,41 @@ module Main where
 
 
 -- local imports
+import ArchyCommon
 import AURConnector
 import PacmanWrapper
+import PrettyPrint
 
 
--- main
+-- | check for packages that are out of date
+show_updates :: [AurPackage] -> IO ()
+show_updates [] = return ()
+show_updates (x:xs) = 
+  do 
+    print_package_name (name x)
+    if installedVersion x /= availableVersion x then
+      do
+        putColorStrLn Red outOfDateMsg
+        show_updates xs
+      else do
+        putColorStrLn Green uptoDateMsg
+        show_updates xs
+
+  where
+    print_package_name :: String -> IO ()
+    print_package_name pkgName = putColorStr Yellow nameString
+      where
+        dots = replicate (25 - length(pkgName)) '.'
+        nameString = pkgName ++ dots ++ "  ::  "
+
+
+    outOfDateMsg = "Out of date " ++ "(" ++ installedVersion x 
+                   ++ " -> " ++ availableVersion x ++ ")"
+    uptoDateMsg  = "Up to date " ++ "(" ++ availableVersion x ++ ")"
+
+
+
+-- | main
 main :: IO ()
 main = 
   do
@@ -36,5 +66,5 @@ main =
     Nothing -> return ()
     Just packages -> do
       info <- retrieve_aur_info packages
-      print info
+      show_updates info
       
