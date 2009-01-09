@@ -12,8 +12,9 @@ GHC_FLAGS_DEVEL = -O -fwarn-incomplete-patterns -fwarn-incomplete-record-updates
 GHC_FLAGS_RELEASE = -O2
 
 OBJECTS = src/archy.hs src/ApplicativeParsec.hs src/ArchyCommon.hs \
-	  src/AURConnector.hs src/Json.hs src/PacmanWrapper.hs \
-	  src/PrettyPrint.hs
+	  src/AURConnector.hs src/CommandLineParser.hs \
+	  src/DisplayFunctions.hs \
+	  src/Json.hs src/PacmanWrapper.hs src/PrettyPrint.hs
 
 
 all: debug

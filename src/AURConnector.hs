@@ -30,18 +30,20 @@ import ArchyCommon
 import Json
 
 
--- base url for retrieving AUR package info 
-baseURL = "http://aur.archlinux.org/rpc.php?type=info&arg=" ::String
+-- base url for retrieving AUR package info
+baseURL :: String
+baseURL = "http://aur.archlinux.org/rpc.php?type=info&arg=" 
 
 
 -- | simple function to request json info from aur
 request_json :: String -> IO (Maybe String)
-request_json url = withCurlDo $ do 
-                     h <- initialize
-                     (status,response) <- curlGetString url [] 
-                     case status of
-                       CurlOK -> return $ Just response
-                       _      -> return Nothing
+request_json anUrl = withCurlDo $ do 
+                       
+  initialize
+  (status,response) <- curlGetString anUrl [] 
+  case status of
+    CurlOK -> return $ Just response
+    _      -> return Nothing
 
 
 -- | simple data structure for keeping track of JSON data
@@ -90,16 +92,16 @@ populate_packageInfo info =
 -- | given a package name retrieve the packageInfo from the arch 
 -- linux mirrors
 retrieve_packageInfo :: String -> IO (Maybe PackageInfo)
-retrieve_packageInfo name =
+retrieve_packageInfo aName =
 
   let 
-    url = baseURL ++ name
+    anUrl = baseURL ++ aName
   in 
-    request_json url >>= \jsonData ->
+    request_json anUrl >>= \jsonData ->
     case jsonData of
-      Nothing      -> return Nothing
-      Just content -> case parse parse_json "" content of
-        Left e  -> return Nothing
+      Nothing    -> return Nothing
+      Just items -> case parse parse_json "" items of
+        Left _  -> return Nothing
         Right r -> return $ parse_package_info r 
 
 
